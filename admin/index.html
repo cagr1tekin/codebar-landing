@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodeBar — Admin Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:            #09090b;
+      --bg-card:       #18181b;
+      --bg-card2:      #27272a;
+      --border:        rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.12);
+      --primary:       #2563eb;
+      --primary-hover: #1d4ed8;
+      --text:          #f4f4f5;
+      --muted:         #71717a;
+      --success:       #22c55e;
+      --error:         #ef4444;
+      --warning:       #f59e0b;
+      --radius:        12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    .nav {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: blur(16px);
+      background: rgba(9,9,11,.9);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto; padding: 0 24px;
+      height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 8px;
+      font-weight: 800; font-size: 1rem; color: var(--text);
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; flex-shrink: 0;
+    }
+    .nav-badge {
+      font-size: .75rem; font-weight: 600; color: var(--muted);
+      background: var(--bg-card2); border: 1px solid var(--border-strong);
+      padding: 3px 10px; border-radius: 100px;
+    }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    #user-info { font-size: .82rem; color: var(--muted); }
+    .btn-logout {
+      font-size: .82rem; font-weight: 500; cursor: pointer;
+      background: none; border: 1px solid var(--border-strong);
+      color: var(--muted); padding: 5px 12px; border-radius: 8px;
+      transition: all .15s; font-family: inherit;
+    }
+    .btn-logout:hover { color: var(--text); border-color: var(--border-strong); background: var(--bg-card2); }
+
+    /* ── MAIN ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* ── LOGIN ── */
+    #login-screen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: calc(100vh - 56px);
+    }
+    .login-card {
+      width: 100%; max-width: 400px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 36px;
+    }
+    .login-card h2 {
+      font-size: 1.4rem; font-weight: 800;
+      letter-spacing: -.3px; margin-bottom: 6px;
+    }
+    .login-card p { font-size: .88rem; color: var(--muted); margin-bottom: 28px; }
+
+    /* ── FORM ELEMENTS ── */
+    label {
+      display: block; font-size: .75rem; font-weight: 600;
+      color: var(--muted); text-transform: uppercase; letter-spacing: .08em;
+      margin-bottom: 6px;
+    }
+    input, select {
+      width: 100%; padding: 11px 14px;
+      background: var(--bg-card2); border: 1px solid var(--border-strong);
+      border-radius: 10px; color: var(--text);
+      font-family: inherit; font-size: .9rem;
+      outline: none; transition: border-color .15s;
+    }
+    input:focus, select:focus { border-color: var(--primary); }
+    input::placeholder { color: var(--muted); }
+    .field { margin-bottom: 16px; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: inherit; font-weight: 600; cursor: pointer;
+      border: none; border-radius: var(--radius);
+      transition: background .15s, transform .1s; white-space: nowrap;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-primary {
+      background: var(--primary); color: #fff;
+      padding: 11px 20px; font-size: .9rem;
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .btn-sm {
+      padding: 7px 14px; font-size: .8rem;
+      background: var(--bg-card2); color: var(--text);
+      border: 1px solid var(--border-strong);
+    }
+    .btn-sm:hover { background: var(--border); }
+    .btn-success {
+      background: rgba(34,197,94,.15); color: var(--success);
+      border: 1px solid rgba(34,197,94,.25);
+      padding: 7px 14px; font-size: .8rem;
+    }
+    .btn-success:hover { background: rgba(34,197,94,.22); }
+    .btn-full { width: 100%; justify-content: center; }
+
+    /* ── ALERTS ── */
+    .alert {
+      padding: 10px 14px; border-radius: 10px;
+      font-size: .85rem; margin-bottom: 16px;
+      display: none;
+    }
+    .alert.show { display: block; }
+    .alert-error { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.25); color: #fca5a5; }
+    .alert-success { background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.25); color: #86efac; }
+    .alert-info { background: rgba(37,99,235,.1); border: 1px solid rgba(37,99,235,.25); color: #93c5fd; }
+
+    /* ── DASHBOARD ── */
+    #dashboard { display: none; padding: 32px 0 64px; }
+
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .page-header h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -.3px; }
+    .page-header p { font-size: .85rem; color: var(--muted); margin-top: 3px; }
+
+    /* ── STATS ── */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 12px; margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px 22px;
+    }
+    .stat-label { font-size: .75rem; color: var(--muted); margin-bottom: 4px; }
+    .stat-value { font-size: 1.6rem; font-weight: 800; }
+
+    /* ── TABLE ── */
+    .table-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+    }
+    .table-card-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .table-card-header h2 { font-size: 1rem; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left; padding: 10px 22px;
+      font-size: .72rem; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .07em;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,.02);
+    }
+    td {
+      padding: 13px 22px;
+      font-size: .88rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,.02); }
+    .td-muted { color: var(--muted); font-size: .8rem; }
+    .actions-cell { display: flex; gap: 6px; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,.7); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--bg-card); border: 1px solid var(--border-strong);
+      border-radius: 20px; padding: 32px;
+      width: 100%; max-width: 480px;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: 6px; }
+    .modal p { font-size: .85rem; color: var(--muted); margin-bottom: 24px; }
+    .modal-footer {
+      display: flex; gap: 10px; justify-content: flex-end;
+      margin-top: 24px; padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── CLAIM TOKEN ── */
+    .token-box {
+      background: var(--bg-card2); border: 1px solid var(--border-strong);
+      border-radius: 10px; padding: 14px 16px;
+      font-family: 'Courier New', monospace; font-size: .82rem;
+      word-break: break-all; color: #93c5fd;
+      margin-bottom: 10px;
+    }
+    .token-actions { display: flex; gap: 8px; }
+
+    /* ── EMPTY ── */
+    .empty-state {
+      text-align: center; padding: 48px 24px;
+      color: var(--muted); font-size: .9rem;
+    }
+
+    /* ── SPINNER ── */
+    .spinner {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.2);
+      border-top-color: #fff;
+      animation: spin .6s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 640px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .login-card { padding: 28px 20px; }
+      th:nth-child(3), td:nth-child(3),
+      th:nth-child(4), td:nth-child(4) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="logo">
+      <div class="logo-icon">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+      </div>
+      CodeBar
+    </a>
+    <span class="nav-badge">Admin Panel</span>
+    <div class="nav-right">
+      <span id="user-info"></span>
+      <button class="btn-logout" id="btn-logout" style="display:none" onclick="logout()">Çıkış Yap</button>
+    </div>
+  </div>
+</nav>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <h2>Admin Girişi</h2>
+    <p>Süper yönetici hesabınızla giriş yapın.</p>
+
+    <div id="login-alert" class="alert alert-error"></div>
+
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <div class="field">
+        <label>E-posta</label>
+        <input type="email" id="login-email" placeholder="admin@codebar.app" autocomplete="email" required />
+      </div>
+      <div class="field">
+        <label>Şifre</label>
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required />
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" id="login-btn">
+        Giriş Yap
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="container">
+
+    <div class="page-header">
+      <div>
+        <h1>Mağazalar</h1>
+        <p>Tüm mağazaları yönetin, claim token üretin.</p>
+      </div>
+      <button class="btn btn-primary" onclick="openCreateModal()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Mağaza Ekle
+      </button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Toplam Mağaza</div>
+        <div class="stat-value" id="stat-stores">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Bu Ay Eklenen</div>
+        <div class="stat-value" id="stat-new">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Aktif Abonelik</div>
+        <div class="stat-value" id="stat-active">—</div>
+      </div>
+    </div>
+
+    <div id="dash-alert" class="alert alert-error"></div>
+
+    <div class="table-card">
+      <div class="table-card-header">
+        <h2>Mağaza Listesi</h2>
+        <button class="btn btn-sm" onclick="loadStores()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Yenile
+        </button>
+      </div>
+      <div id="stores-container">
+        <div class="empty-state">Yükleniyor...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CREATE STORE MODAL -->
+<div class="modal-overlay" id="create-modal">
+  <div class="modal">
+    <h2>Yeni Mağaza Oluştur</h2>
+    <p>Mağaza oluşturulduktan sonra kurulum için claim token otomatik üretilecek.</p>
+
+    <div id="create-alert" class="alert alert-error"></div>
+
+    <div class="field">
+      <label>Mağaza Adı *</label>
+      <input type="text" id="create-name" placeholder="Örn: Ahmet Market" />
+    </div>
+    <div class="field">
+      <label>Adres</label>
+      <input type="text" id="create-address" placeholder="İsteğe bağlı" />
+    </div>
+    <div class="field">
+      <label>Telefon</label>
+      <input type="tel" id="create-phone" placeholder="05xx xxx xx xx" />
+    </div>
+    <div class="field">
+      <label>Vergi No</label>
+      <input type="text" id="create-tax" placeholder="İsteğe bağlı" />
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-sm" onclick="closeCreateModal()">İptal</button>
+      <button class="btn btn-primary" id="create-btn" onclick="handleCreateStore()">
+        Oluştur
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CLAIM TOKEN MODAL -->
+<div class="modal-overlay" id="token-modal">
+  <div class="modal">
+    <h2 id="token-modal-title">Claim Token</h2>
+    <p id="token-modal-desc">Bu token tek kullanımlıktır. Müşteriye güvenli bir şekilde iletin.</p>
+
+    <div class="alert alert-info show" style="margin-bottom:12px">
+      Token yalnızca bir kez gösterilir. Şimdi kopyalayın veya kaydedin.
+    </div>
+
+    <div class="token-box" id="token-display"></div>
+    <div class="token-actions">
+      <button class="btn btn-success" onclick="copyToken()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+        </svg>
+        <span id="copy-btn-text">Kopyala</span>
+      </button>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="closeTokenModal()">Tamam, Kapattım</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'https://codebar-worker.codebar-bsr.workers.dev';
+let token = sessionStorage.getItem('admin_token');
+let currentToken = '';
+
+// ── AUTH ──────────────────────────────────────────────────────────
+async function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('login-btn');
+  const alert = document.getElementById('login-alert');
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Giriş yapılıyor...';
+  hideAlert('login-alert');
+
+  try {
+    const res = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+
+    if (!data.success) {
+      showAlert('login-alert', data.error || 'Giriş başarısız');
+      return;
+    }
+    if (data.user.role !== 'superadmin') {
+      showAlert('login-alert', 'Bu panel yalnızca süper yöneticilere açıktır.');
+      return;
+    }
+
+    token = data.token;
+    sessionStorage.setItem('admin_token', token);
+    showDashboard(data.user);
+  } catch {
+    showAlert('login-alert', 'Sunucuya bağlanılamadı. Tekrar deneyin.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Giriş Yap';
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('admin_token');
+  token = null;
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('btn-logout').style.display = 'none';
+  document.getElementById('user-info').textContent = '';
+}
+
+function showDashboard(user) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('btn-logout').style.display = 'inline-flex';
+  document.getElementById('user-info').textContent = user.fullName || user.username;
+  loadStores();
+}
+
+// ── STORES ───────────────────────────────────────────────────────
+async function loadStores() {
+  const container = document.getElementById('stores-container');
+  container.innerHTML = '<div class="empty-state">Yükleniyor...</div>';
+  hideAlert('dash-alert');
+
+  try {
+    const res = await fetch(`${API}/admin/stores`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.status === 401) { logout(); return; }
+    const data = await res.json();
+    if (!data.success) { showAlert('dash-alert', data.error); return; }
+
+    const stores = data.stores || [];
+    updateStats(stores);
+    renderStores(stores);
+  } catch {
+    showAlert('dash-alert', 'Mağazalar yüklenemedi.');
+    container.innerHTML = '<div class="empty-state">Yüklenemedi</div>';
+  }
+}
+
+function updateStats(stores) {
+  document.getElementById('stat-stores').textContent = stores.length;
+
+  const now = new Date();
+  const thisMonth = stores.filter(s => {
+    if (!s.created_at) return false;
+    const d = new Date(s.created_at);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }).length;
+  document.getElementById('stat-new').textContent = thisMonth;
+
+  const active = stores.filter(s => {
+    if (!s.subscription_end_date) return false;
+    return new Date(s.subscription_end_date) > now;
+  }).length;
+  document.getElementById('stat-active').textContent = active;
+}
+
+function renderStores(stores) {
+  const container = document.getElementById('stores-container');
+  if (!stores.length) {
+    container.innerHTML = '<div class="empty-state">Henüz mağaza yok. İlk mağazayı ekleyin.</div>';
+    return;
+  }
+
+  const rows = stores.map(s => `
+    <tr>
+      <td>
+        <div style="font-weight:600">${escHtml(s.name)}</div>
+        <div class="td-muted">${escHtml(s.id.slice(0,8))}…</div>
+      </td>
+      <td class="td-muted">${escHtml(s.phone || '—')}</td>
+      <td class="td-muted">${escHtml(s.address || '—')}</td>
+      <td class="td-muted">${formatDate(s.created_at)}</td>
+      <td>
+        <div class="actions-cell">
+          <button class="btn btn-sm" onclick="handleRegenerateToken('${escAttr(s.id)}', '${escAttr(s.name)}')">
+            Token Üret
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  container.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Mağaza</th>
+          <th>Telefon</th>
+          <th>Adres</th>
+          <th>Kayıt</th>
+          <th>İşlemler</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+// ── CREATE STORE ─────────────────────────────────────────────────
+function openCreateModal() {
+  ['create-name','create-address','create-phone','create-tax'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  hideAlert('create-alert');
+  document.getElementById('create-modal').classList.add('open');
+}
+
+function closeCreateModal() {
+  document.getElementById('create-modal').classList.remove('open');
+}
+
+async function handleCreateStore() {
+  const name = document.getElementById('create-name').value.trim();
+  if (!name) { showAlert('create-alert', 'Mağaza adı zorunlu'); return; }
+
+  const btn = document.getElementById('create-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Oluşturuluyor...';
+  hideAlert('create-alert');
+
+  try {
+    const res = await fetch(`${API}/admin/create-store`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        name,
+        address: document.getElementById('create-address').value.trim() || null,
+        phone: document.getElementById('create-phone').value.trim() || null,
+        taxNumber: document.getElementById('create-tax').value.trim() || null,
+      }),
+    });
+    const data = await res.json();
+    if (!data.success) { showAlert('create-alert', data.error || 'Oluşturulamadı'); return; }
+
+    closeCreateModal();
+    showTokenModal(`${name} — Claim Token`, data.claimToken);
+    loadStores();
+  } catch {
+    showAlert('create-alert', 'Sunucu hatası. Tekrar deneyin.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Oluştur';
+  }
+}
+
+// ── REGENERATE TOKEN ──────────────────────────────────────────────
+async function handleRegenerateToken(storeId, storeName) {
+  try {
+    const res = await fetch(`${API}/admin/generate-claim`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ storeId }),
+    });
+    const data = await res.json();
+    if (!data.success) { showAlert('dash-alert', data.error || 'Token üretilemedi'); return; }
+    showTokenModal(`${storeName} — Yeni Claim Token`, data.claimToken);
+  } catch {
+    showAlert('dash-alert', 'Sunucu hatası.');
+  }
+}
+
+// ── TOKEN MODAL ───────────────────────────────────────────────────
+function showTokenModal(title, claimToken) {
+  currentToken = claimToken;
+  document.getElementById('token-modal-title').textContent = title;
+  document.getElementById('token-display').textContent = claimToken;
+  document.getElementById('copy-btn-text').textContent = 'Kopyala';
+  document.getElementById('token-modal').classList.add('open');
+}
+
+function closeTokenModal() {
+  document.getElementById('token-modal').classList.remove('open');
+}
+
+async function copyToken() {
+  try {
+    await navigator.clipboard.writeText(currentToken);
+    document.getElementById('copy-btn-text').textContent = 'Kopyalandı!';
+    setTimeout(() => { document.getElementById('copy-btn-text').textContent = 'Kopyala'; }, 2000);
+  } catch {
+    document.getElementById('copy-btn-text').textContent = 'Kopyalanamadı';
+  }
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────
+function showAlert(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function hideAlert(id) {
+  const el = document.getElementById(id);
+  el.textContent = '';
+  el.classList.remove('show');
+}
+function escHtml(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function escAttr(str) {
+  return String(str ?? '').replace(/'/g,"\\'");
+}
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('tr-TR', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+// ── INIT ─────────────────────────────────────────────────────────
+// Kayıtlı token varsa session kontrolü yap
+(async () => {
+  if (!token) return;
+  try {
+    const res = await fetch(`${API}/auth/session`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (data.success && data.user.role === 'superadmin') {
+      showDashboard(data.user);
+    } else {
+      sessionStorage.removeItem('admin_token');
+      token = null;
+    }
+  } catch {
+    sessionStorage.removeItem('admin_token');
+    token = null;
+  }
+})();
+
+// Modal dışına tıklayınca kapat
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+</script>
+</body>
+</html>

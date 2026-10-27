@@ -1,0 +1,8 @@
+[
+  {
+    "AllowedOrigins": ["https://codebar-landing.pages.dev", "http://localhost:*"],
+    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "MaxAgeSeconds": 3600
+  }
+]
